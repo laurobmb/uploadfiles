@@ -8,7 +8,7 @@
 
 ## Install NFS client on kubernetes nodes
 
-    Install package nfs-utils for CentOS, Fedora and Redhat or install nfs-common for Ubuntu or Debian.
+Install package nfs-utils for CentOS, Fedora and Redhat or install nfs-common for Ubuntu or Debian.
 
 ## Configura NFS
 
