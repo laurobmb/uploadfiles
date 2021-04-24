@@ -2,6 +2,8 @@
 
 ![](project.png)
 
+IP of NFS server: 192.168.123.244
+
 ## Install NFS
     dnf install nfs-utils
     systemctl enable --now nfs-server
