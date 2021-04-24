@@ -6,6 +6,10 @@
     dnf install nfs-utils
     systemctl enable --now nfs-server
 
+## Install NFS client on kubernetes nodes
+
+    Install package nfs-utils for CentOS, Fedora and Redhat or install nfs-common for Ubuntu or Debian.
+
 ## Configura NFS
 
     mkdir /opt/{share,vol01,vol02}
