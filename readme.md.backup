@@ -1,6 +1,6 @@
 # FastAPI Upload files to NFS in Kubernetes 
 
-![](project.png)
+
 
 ## Install NFS
     dnf install nfs-utils

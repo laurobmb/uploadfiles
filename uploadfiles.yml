@@ -1,0 +1,155 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: uploadfiles
+  labels:
+    name: uploadfiles
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uploadfiles-server
+  labels:
+    app: uploadfiles
+  namespace: uploadfiles
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: portuploadfiles
+  selector:
+    name: uploadfiles-server
+
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: uploadfiles-server
+  labels:
+    app: uploadfiles
+    tier: server
+    environment: dev
+  namespace: uploadfiles
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: uploadfiles-server
+        app: uploadfiles
+    spec:
+      containers:
+        - name: uploadfiles-server
+          image: laurobmb/uploadfiles:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8000
+            protocol: TCP
+            name: portuploadfiles
+          volumeMounts:
+          - name: vol-uploads-01
+            mountPath: /upload
+          - name: vol-uploads-02
+            mountPath: /uploads
+      volumes:
+      - name: vol-uploads-01
+        persistentVolumeClaim:
+          claimName: pvc-uploadfiles-01
+      - name: vol-uploads-02
+        persistentVolumeClaim:
+          claimName: pvc-uploadfiles-02
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-uploadfiles-01
+  namespace: uploadfiles
+  labels:
+    app: uploadfiles
+spec:
+  storageClassName: volnfs01
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-uploadfiles-02
+  namespace: uploadfiles
+  labels:
+    app: uploadfiles
+spec:
+  storageClassName: volnfs02
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: volnfs01
+spec:
+  capacity:
+    storage: 2Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: volnfs01
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    path: /opt/vol01
+    server: 192.168.123.244
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: volnfs02
+spec:
+  capacity:
+    storage: 2Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: volnfs02
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    path: /opt/vol02
+    server: 192.168.123.244      
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: uploadfiles-ingress
+  namespace: uploadfiles
+  annotations:
+   kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: app6.w0rm30.seg.br
+    http:
+      paths:
+      - backend:
+          service:
+            name: uploadfiles-server
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
